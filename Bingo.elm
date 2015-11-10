@@ -46,6 +46,8 @@ newEntry phrase points id =
   , wasSpoken = False
   , id = id
   }
+  --Same as:
+  --Entry phrase points False id
 
 
 --UPDATE
@@ -98,10 +100,12 @@ title message times =
 
 
 --A "function" with no arguments is a definition, not a function
+pageHeader : Html
 pageHeader =
   h1 [] [ title "bingo!" 3 ]
 
 
+pageFooter : Html
 pageFooter =
   footer []
     [ a [ href "https://neighborly.com" ]
@@ -122,6 +126,7 @@ entryItem address entry =
     ]
 
 
+--totalPoints : List {..} -> Int
 totalPoints : List Entry -> Int
 totalPoints entries =
   entries
@@ -167,10 +172,8 @@ view address model =
 
 --WIRE IT ALL TOGETHER
 
+main : Signal Html
 main =
-  --initialModel
-  --  |> update Sort
-  --  |> view
   StartApp.start
     { model = initialModel
     , view = view
