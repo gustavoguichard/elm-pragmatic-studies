@@ -16,6 +16,8 @@ import Html.Events exposing (..)
 import String exposing (toUpper, repeat, trimRight)
 import Signal exposing (Address)
 import StartApp.Simple as StartApp
+import Debug
+
 
 --MODEL
 
@@ -68,7 +70,10 @@ update action model =
     Delete id ->
       let
         isntFromId e = e.id /= id
-        remainingEntries = List.filter isntFromId model.entries
+        remainingEntries =  List.filter isntFromId model.entries
+                            |> Debug.log "The remaining entries"
+        --Same as:
+        --_ = Debug.log "The remaining entries" remainingEntries
       in
         { model | entries <- remainingEntries }
 
