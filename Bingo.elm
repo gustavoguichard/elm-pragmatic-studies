@@ -14,6 +14,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import String exposing (toUpper, repeat, trimRight)
+import Signal exposing (Address)
+import StartApp.Simple as StartApp
 
 --MODEL
 
@@ -99,12 +101,14 @@ entryList entries =
   ul [] (List.map entryItem entries)
 
 
-view : Model -> Html
-view model =
+view : Address Action -> Model -> Html
+view address model =
   div [ id "container" ]
     [ pageHeader
     , entryList model.entries
-    , button [ class "sort" ] [ text "Sort" ]
+    , button
+      [ class "sort", onClick address Sort ]
+      [ text "Sort" ]
     , pageFooter
     ]
 
@@ -112,6 +116,10 @@ view model =
 --WIRE IT ALL TOGETHER
 
 main =
-  initialModel
-    |> update Sort
-    |> view
+  --initialModel
+  --  |> update Sort
+  --  |> view
+  StartApp.start
+    { model = initialModel
+    , view = view
+    , update = update }

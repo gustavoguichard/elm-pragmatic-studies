@@ -60,6 +60,7 @@ footer a {
 
 button.sort {
   border: 0;
+  cursor: pointer;
   height: 40px;
   padding: 5px 15px;
   font-size: 14px;
