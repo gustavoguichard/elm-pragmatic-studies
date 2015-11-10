@@ -54,6 +54,7 @@ type Action
   = NoOp
   | Sort
   | Delete Int
+  | Mark Int
 
 
 update : Action -> Model -> Model
@@ -76,6 +77,13 @@ update action model =
         --_ = Debug.log "The remaining entries" remainingEntries
       in
         { model | entries <- remainingEntries }
+
+    Mark id ->
+      let
+        updateEntry e =
+          if e.id == id then { e | wasSpoken <- (not e.wasSpoken) } else e
+      in
+        { model | entries <- List.map updateEntry model.entries }
 
 
 --VIEW
@@ -103,21 +111,44 @@ pageFooter =
 
 entryItem : Address Action -> Entry -> Html
 entryItem address entry =
-  li []
+  li
+    [ classList
+      [ ("highlight", entry.wasSpoken)
+      , ("entry-not-spoken", not <| entry.wasSpoken) ]
+    , onClick address (Mark entry.id) ]
     [ span [ class "phrase" ] [ text entry.phrase ]
-    , span [ class "points" ] [ entry.points |> toString |> text ]
+    , span [ class "points" ] [ toString entry.points |> text ]
     , button [ class "delete", onClick address (Delete entry.id) ] []
     ]
+
+
+totalPoints : List Entry -> Int
+totalPoints entries =
+  entries
+    |> List.filter .wasSpoken
+    |> List.foldl (\e sum -> e.points + sum) 0
+    --Same as:
+    -- |> List.map .points spokenEntries
+    -- |> List.sum
+
+
+totalItem : Int -> Html
+totalItem total =
+  li
+    [ class "total" ]
+    [ span [ class "label" ] [ text "Total" ]
+    , span [ class "points" ] [ text (toString total) ] ]
 
 
 entryList : Address Action -> List Entry -> Html
 entryList address entries =
   let
     entryItems = List.map (entryItem address) entries
+    items = entryItems ++ [ totalItem (totalPoints entries) ]
     --Same as:
     --entryWithAddress entry = entryItem address entry
   in
-    ul [] entryItems
+    ul [] items
     --Same as:
     --ul [] (List.map entryWithAddress entries)
 
