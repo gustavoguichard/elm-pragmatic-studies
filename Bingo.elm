@@ -51,6 +51,7 @@ type Action
   | Sort
 
 
+update : Action -> Model -> Model
 update action model =
   case action of
     NoOp ->
@@ -58,6 +59,8 @@ update action model =
 
     Sort ->
       { model | entries <- List.sortBy .points model.entries }
+      --This is same as:
+      --List.sortBy (\entry -> entry.points) model.entries
 
 
 --VIEW
@@ -87,7 +90,7 @@ entryItem : Entry -> Html
 entryItem entry =
   li []
     [ span [ class "phrase" ] [ text entry.phrase ]
-    , span [ class "points" ] [ text <| toString entry.points ]
+    , span [ class "points" ] [ entry.points |> toString |> text ]
     ]
 
 
@@ -101,6 +104,7 @@ view model =
   div [ id "container" ]
     [ pageHeader
     , entryList model.entries
+    , button [ class "sort" ] [ text "Sort" ]
     , pageFooter
     ]
 
@@ -108,4 +112,6 @@ view model =
 --WIRE IT ALL TOGETHER
 
 main =
-  view (update Sort initialModel)
+  initialModel
+    |> update Sort
+    |> view
