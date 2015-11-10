@@ -51,6 +51,7 @@ newEntry phrase points id =
 type Action
   = NoOp
   | Sort
+  | Delete Int
 
 
 update : Action -> Model -> Model
@@ -63,6 +64,13 @@ update action model =
       { model | entries <- List.sortBy .points model.entries }
       --This is same as:
       --List.sortBy (\entry -> entry.points) model.entries
+
+    Delete id ->
+      let
+        isntFromId e = e.id /= id
+        remainingEntries = List.filter isntFromId model.entries
+      in
+        { model | entries <- remainingEntries }
 
 
 --VIEW
@@ -88,24 +96,32 @@ pageFooter =
     ]
 
 
-entryItem : Entry -> Html
-entryItem entry =
+entryItem : Address Action -> Entry -> Html
+entryItem address entry =
   li []
     [ span [ class "phrase" ] [ text entry.phrase ]
     , span [ class "points" ] [ entry.points |> toString |> text ]
+    , button [ class "delete", onClick address (Delete entry.id) ] []
     ]
 
 
-entryList : List Entry -> Html
-entryList entries =
-  ul [] (List.map entryItem entries)
+entryList : Address Action -> List Entry -> Html
+entryList address entries =
+  let
+    entryItems = List.map (entryItem address) entries
+    --Same as:
+    --entryWithAddress entry = entryItem address entry
+  in
+    ul [] entryItems
+    --Same as:
+    --ul [] (List.map entryWithAddress entries)
 
 
 view : Address Action -> Model -> Html
 view address model =
   div [ id "container" ]
     [ pageHeader
-    , entryList model.entries
+    , entryList address model.entries
     , button
       [ class "sort", onClick address Sort ]
       [ text "Sort" ]
