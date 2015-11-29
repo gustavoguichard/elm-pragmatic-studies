@@ -71,7 +71,7 @@ update action model =
       model
 
     Sort ->
-      { model | entries <- List.sortBy .points model.entries }
+      { model | entries = List.sortBy .points model.entries }
       --This is same as:
       --List.sortBy (\entry -> entry.points) model.entries
 
@@ -83,20 +83,20 @@ update action model =
         --Same as:
         --_ = Debug.log "The remaining entries" remainingEntries
       in
-        { model | entries <- remainingEntries }
+        { model | entries = remainingEntries }
 
     Mark id ->
       let
         updateEntry e =
-          if e.id == id then { e | wasSpoken <- (not e.wasSpoken) } else e
+          if e.id == id then { e | wasSpoken = (not e.wasSpoken) } else e
       in
-        { model | entries <- List.map updateEntry model.entries }
+        { model | entries = List.map updateEntry model.entries }
 
     UpdatePhraseInput contents ->
-      { model | phraseInput <- contents }
+      { model | phraseInput = contents }
 
     UpdatePointsInput contents ->
-      { model | pointsInput <- contents }
+      { model | pointsInput = contents }
 
     Add ->
       let
@@ -107,10 +107,10 @@ update action model =
       in
         if isInvalid model
         then model
-        else { model | phraseInput <- ""
-                      , pointsInput <- ""
-                      , entries <- entryToAdd :: model.entries
-                      , nextId <- model.nextId + 1 }
+        else { model | phraseInput = ""
+                      , pointsInput = ""
+                      , entries = entryToAdd :: model.entries
+                      , nextId = model.nextId + 1 }
 
 
 --VIEW
@@ -125,9 +125,9 @@ title message times =
 
 
 --A "function" with no arguments is a definition, not a function
-pageHeader : Html
-pageHeader =
-  h1 [] [ title "bingo!" 3 ]
+pageHeader : String -> Html
+pageHeader logo =
+  h1 [] [ title logo 3 ]
 
 
 pageFooter : Html
@@ -178,7 +178,7 @@ entryList address entries =
     --Same as:
     --entryWithAddress entry = entryItem address entry
   in
-    ul [] items
+    ul [ classList [("Hey", True), ("Ho", False)] ] items
     --Same as:
     --ul [] (List.map entryWithAddress entries)
 
@@ -209,7 +209,7 @@ entryForm address model =
 view : Address Action -> Model -> Html
 view address model =
   div [ id "container" ]
-    [ pageHeader
+    [ pageHeader "Bingo!"
     , entryForm address model
     , entryList address model.entries
     , button
