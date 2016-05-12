@@ -1,4 +1,4 @@
-module BingoUtils (..) where
+module BingoUtils exposing (..)
 
 {-| This modules defines various utility functions for the Bingo app.
 
@@ -10,14 +10,6 @@ might provide these functions.
 -}
 
 import String exposing (toInt)
-import Html exposing (Attribute)
-import Html.Events exposing (on, targetValue)
-import Signal exposing (Address)
-
-
-onInput : Address a -> (String -> a) -> Attribute
-onInput address f =
-  on "input" targetValue (\v -> Signal.message address (f v))
 
 
 parseInt : String -> Int
@@ -28,8 +20,3 @@ parseInt string =
 
     Err error ->
       0
-
-
-encrypt : Int -> String -> String
-encrypt offset string =
-  String.foldl (\char acc -> toCode char ++ acc) "" string

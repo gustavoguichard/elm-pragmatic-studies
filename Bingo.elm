@@ -1,25 +1,11 @@
-{-
-
-Studying Elm
-Elm comment block
-
--}
-
-
-module Bingo (..) where
-
---Qualified import, needs to be called with it's module at the front
---import Html
---Unqualified import, exposes the functions to "global" scope
+module Bingo exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.App as App
 import String exposing (toUpper, repeat, trimRight)
-import Signal exposing (Address)
-import StartApp.Simple as StartApp
 import BingoUtils as Utils
-import Debug
 
 
 --MODEL
@@ -56,16 +42,10 @@ newEntry phrase points id =
 
 
 
---Same as:
---{ phrase = phrase
---, points = points
---, wasSpoken = False
---, id = id
---}
 --UPDATE
 
 
-type Action
+type Msg
   = NoOp
   | Sort
   | Delete Int
@@ -75,17 +55,15 @@ type Action
   | Add
 
 
-update : Action -> Model -> Model
-update action model =
-  case action of
+update : Msg -> Model -> Model
+update msg model =
+  case msg of
     NoOp ->
       model
 
     Sort ->
       { model | entries = List.sortBy .points model.entries }
 
-    --This is same as:
-    --List.sortBy (\entry -> entry.points) model.entries
     Delete id ->
       let
         isntFromId e =
@@ -93,10 +71,7 @@ update action model =
 
         remainingEntries =
           List.filter isntFromId model.entries
-            |> Debug.log "The remaining entries"
 
-        --Same as:
-        --_ = Debug.log "The remaining entries" remainingEntries
       in
         { model | entries = remainingEntries }
 
@@ -139,7 +114,7 @@ update action model =
 --VIEW
 
 
-title : String -> Int -> Html
+title : String -> Int -> Html Msg
 title message times =
   message
     ++ " "
@@ -149,16 +124,12 @@ title message times =
     |> text
 
 
-
---A "function" with no arguments is a definition, not a function
-
-
-pageHeader : String -> Html
+pageHeader : String -> Html Msg
 pageHeader logo =
   h1 [] [ title logo 3 ]
 
 
-pageFooter : Html
+pageFooter : Html Msg
 pageFooter =
   footer
     []
@@ -168,40 +139,30 @@ pageFooter =
     ]
 
 
-entryItem : Address Action -> Entry -> Html
-entryItem address entry =
+entryItem : Entry -> Html Msg
+entryItem entry =
   li
     [ classList
         [ ( "highlight", entry.wasSpoken )
         , ( "entry-not-spoken", not <| entry.wasSpoken )
         ]
-    , onClick address (Mark entry.id)
+    , onClick (Mark entry.id)
     ]
     [ span [ class "phrase" ] [ text entry.phrase ]
     , span [ class "points" ] [ toString entry.points |> text ]
-    , button [ class "delete", onClick address (Delete entry.id) ] []
+    , button [ class "delete", onClick (Delete entry.id) ] []
     ]
-
-
-
---totalPoints : List {..} -> Int
 
 
 totalPoints : List Entry -> Int
 totalPoints entries =
   entries
     |> List.filter .wasSpoken
-    |> List.foldl (\e sum -> e.points + sum) 0
+    |> List.map .points
+    |> List.sum
 
 
-
---Same as:
--- List.filter .wasSpoken entries
--- |> List.map .points spokenEntries
--- |> List.sum
-
-
-totalItem : Int -> Html
+totalItem : Int -> Html Msg
 totalItem total =
   li
     [ class "total" ]
@@ -210,28 +171,21 @@ totalItem total =
     ]
 
 
-entryList : Address Action -> List Entry -> Html
-entryList address entries =
+entryList : List Entry -> Html Msg
+entryList entries =
   let
     entryItems =
-      List.map (entryItem address) entries
+      List.map (entryItem) entries
 
     items =
       entryItems ++ [ totalItem (totalPoints entries) ]
 
-    --Same as:
-    --entryWithAddress entry = entryItem address entry
   in
     ul [ classList [ ( "Hey", True ), ( "Ho", False ) ] ] items
 
 
-
---Same as:
---ul [] (List.map entryWithAddress entries)
-
-
-entryForm : Address Action -> Model -> Html
-entryForm address model =
+entryForm : Model -> Html Msg
+entryForm model =
   div
     []
     [ input
@@ -240,7 +194,7 @@ entryForm address model =
         , value model.phraseInput
         , name "phrase"
         , autofocus True
-        , Utils.onInput address UpdatePhraseInput
+        , onInput UpdatePhraseInput
         ]
         []
     , input
@@ -248,23 +202,23 @@ entryForm address model =
         , placeholder "Points"
         , value model.pointsInput
         , name "points"
-        , Utils.onInput address UpdatePointsInput
+        , onInput UpdatePointsInput
         ]
         []
-    , button [ class "add", onClick address Add ] [ text "Add" ]
+    , button [ class "add", onClick Add ] [ text "Add" ]
     , h2 [] [ text (model.phraseInput ++ " " ++ model.pointsInput) ]
     ]
 
 
-view : Address Action -> Model -> Html
-view address model =
+view : Model -> Html Msg
+view model =
   div
     [ id "container" ]
     [ pageHeader "Bingo!"
-    , entryForm address model
-    , entryList address model.entries
+    , entryForm model
+    , entryList model.entries
     , button
-        [ class "sort", onClick address Sort ]
+        [ class "sort", onClick Sort ]
         [ text "Sort" ]
     , pageFooter
     ]
@@ -274,9 +228,9 @@ view address model =
 --WIRE IT ALL TOGETHER
 
 
-main : Signal Html
+main : Program Never
 main =
-  StartApp.start
+  App.beginnerProgram
     { model = initialModel
     , view = view
     , update = update
