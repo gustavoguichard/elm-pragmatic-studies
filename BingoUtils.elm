@@ -1,4 +1,5 @@
-module BingoUtils where
+module BingoUtils (..) where
+
 {-| This modules defines various utility functions for the Bingo app.
 
 These functions involve fairly advanced features of Elm that we don't
@@ -24,5 +25,11 @@ parseInt string =
   case String.toInt string of
     Ok value ->
       value
+
     Err error ->
       0
+
+
+encrypt : Int -> String -> String
+encrypt offset string =
+  String.foldl (\char acc -> toCode char ++ acc) "" string
